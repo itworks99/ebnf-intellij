@@ -1,24 +1,24 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
-    <id>ebnf</id>
-    <name>EBNF Syntax Support</name>
-    <vendor>itworks99</vendor>
+        <idea-plugin>
+            <id>com.github.itworks99.ebnf</id>
+            <name>EBNF Syntax Support</name>
+            <vendor>itworks99</vendor>
 
-    <depends>com.intellij.modules.platform</depends>
+            <depends>com.intellij.modules.platform</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+            <resource-bundle>messages.MyBundle</resource-bundle>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <fileType
-            name="EBNF"
-            implementationClass="ebnf.language.EbnfFileType"
-            fieldName="INSTANCE"
-            language="EBNF"
-            extensions="ebnf"/>
-        <lang.syntaxHighlighterFactory
-            language="EBNF"
-            implementationClass="ebnf.language.EbnfSyntaxHighlighterFactory"/>
-        <toolWindow factoryClass="ebnf.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="ebnf.startup.MyProjectActivity" />
-    </extensions>
-</idea-plugin>
+            <extensions defaultExtensionNs="com.intellij">
+                <fileType
+                    name="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.EbnfFileType"
+                    fieldName="INSTANCE"
+                    language="EBNF"
+                    extensions="ebnf"/>
+                <lang.syntaxHighlighterFactory
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.EbnfSyntaxHighlighterFactory"/>
+                <toolWindow factoryClass="com.github.itworks99.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+                <postStartupActivity implementation="com.github.itworks99.startup.MyProjectActivity" />
+            </extensions>
+        </idea-plugin>
