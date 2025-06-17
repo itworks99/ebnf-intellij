@@ -1,5 +1,12 @@
 # ebnf-intellij
 
+This is intellij plugin for EBNF [Extended Backus-Naur Form](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) syntax highlighting and code completion.
+
+It supports EBNF files with `.ebnf` extension.
+
+[![Kotlin](https://img.shields.io/badge/kotlin-1.9.0-blue.svg)](https://kotlinlang.org)
+[![IntelliJ Platform](https://img.shields.io/badge/intellij%20platform-2023.2-blue.svg)](https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started.html)
+
 ![Build](https://github.com/itworks99/ebnf-intellij/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)

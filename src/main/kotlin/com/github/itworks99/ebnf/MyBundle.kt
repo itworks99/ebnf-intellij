@@ -1,4 +1,4 @@
-package com.github.itworks99.ebnfintellij
+package com.github.itworks99.ebnf
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

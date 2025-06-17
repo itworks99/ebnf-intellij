@@ -1,9 +1,9 @@
-package com.github.itworks99.ebnfintellij.services
+package com.github.itworks99.ebnf.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.github.itworks99.ebnfintellij.MyBundle
+import com.github.itworks99.ebnf.MyBundle
 
 @Service(Service.Level.PROJECT)
 class MyProjectService(project: Project) {

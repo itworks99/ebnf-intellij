@@ -1,4 +1,4 @@
-package com.github.itworks99.ebnfintellij.toolWindow
+package com.github.itworks99.ebnf.toolWindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -8,8 +8,8 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.github.itworks99.ebnfintellij.MyBundle
-import com.github.itworks99.ebnfintellij.services.MyProjectService
+import com.github.itworks99.ebnf.MyBundle
+import com.github.itworks99.ebnf.services.MyProjectService
 import javax.swing.JButton
 
 
