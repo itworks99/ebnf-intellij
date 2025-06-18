@@ -22,6 +22,10 @@ tasks:
       - echo "test:verbose           Run all tests with detailed output"
       - echo "test:single            Run a specific test class"
       - echo "check                  Check coverage and code quality"
+      - echo "coverage               Generate code coverage report"
+      - echo "check:html             Generate HTML report for coverage"
+      - echo "check:html:open        Open HTML report for coverage"
+      - echo "check:xml              Generate XML report for coverage"
     silent: true
   build:
     desc: Build the project
@@ -30,17 +34,41 @@ tasks:
       - cmd gradlew.bat clean build
       - echo "{{.PROJECT_NAME}} build completed successfully."
     silent: true
+  coverage:
+    desc: Generate code coverage report
+    cmds:
+      - echo "Analyzing code coverage for {{.PROJECT_NAME}}..."
+      - cmd ./gradlew koverReport
+      - echo "Code coverage report generated successfully."
   check:
     desc: Check coverage and code quality
     cmds:
       - echo "Checking coverage for {{.PROJECT_NAME}}..."
       - cmd ./gradlew koverVerify
       - echo "Coverage checks completed."
+  check:html:
+    desc: Generate HTML report for coverage
+    cmds:
+      - echo "Generating HTML report for coverage..."
+      - cmd ./gradlew koverHtmlReport
+      - echo "HTML report generated successfully."
+  check:html:open:
+    desc: Open HTML report for coverage
+    cmds:
+      - echo "Opening HTML report for coverage..."
+      - cmd start "" "build/reports/kover/html/index.html"
+      - echo "HTML report opened successfully."
+  check:xml:
+    desc: Generate XML report for coverage
+    cmds:
+      - echo "Generating XML report for coverage..."
+      - cmd ./gradlew koverXmlReport
+      - echo "XML report generated successfully."
   test:
     desc: Run all tests
     cmds:
       - echo "Running tests for {{.PROJECT_NAME}}..."
-      - cmd gradlew.bat test
+      - cmd ./gradlew check
       - echo "Test execution completed."
     silent: true
   test:verbose:

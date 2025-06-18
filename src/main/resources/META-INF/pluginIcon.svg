@@ -7,14 +7,37 @@
    viewBox="0 0 10.583333 10.583333"
    version="1.1"
    id="svg1"
+   sodipodi:docname="pluginIcon.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="16.3125"
+     inkscape:cx="29.762452"
+     inkscape:cy="11.984674"
+     inkscape:window-width="3840"
+     inkscape:window-height="1529"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
   <defs
      id="defs1" />
   <g
      id="layer1">
     <rect
-       style="fill:#404040;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:28.8;stroke-opacity:1"
+       style="fill:#2e3436;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:28.8;stroke-opacity:1"
        id="rect2"
        width="7.951293"
        height="7.951293"
@@ -22,10 +45,8 @@
        y="1.3160201"
        ry="1.3086207" />
     <path
-       style="font-size:16px;font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern';text-align:center;letter-spacing:0px;text-anchor:middle;white-space:pre;fill:#19aeff;stroke-width:1.13386;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:28.8"
-       d="m 12.236328,12.966484 v 1.601563 H 7.7753906 v 3.203125 h 2.9687504 v 1.601562 H 7.7753906 v 3.195313 h 4.4609374 v 1.601562 H 6.6660156 V 12.966484 Z m 4.78125,11.210938 h -3.671875 v -1.601563 h 0.742188 v -8 h -0.742188 v -1.601562 h 3.710938 q 0.765625,0 1.3125,0.9375 0.546875,0.9375 0.546875,2.265625 0,1.4375 -0.632813,2.398437 0.632813,0.96875 0.632813,2.398438 0,1.328125 -0.554688,2.265625 -0.546875,0.9375 -1.34375,0.9375 z m -1.820312,-9.601563 v 3.195313 h 1.859375 q 0.304687,0 0.523437,-0.460938 0.21875,-0.46875 0.21875,-1.132812 0,-0.65625 -0.21875,-1.125 -0.21875,-0.476563 -0.523437,-0.476563 z m 1.859375,4.796875 h -1.859375 v 3.203125 h 1.859375 q 0.304687,0 0.523437,-0.46875 0.21875,-0.46875 0.21875,-1.132812 0,-0.65625 -0.21875,-1.125 -0.21875,-0.476563 -0.523437,-0.476563 z m 2.96875,-6.398437 h 0.742187 l 3.710938,8 v -8 h 1.117187 v 11.203125 h -0.75 l -3.710937,-8 v 8 h -1.109375 z m 12.25,-0.0078 v 1.601563 h -4.460938 v 3.203125 h 2.96875 v 1.601562 h -2.96875 v 4.796875 H 26.705078 V 12.966484 Z"
-       id="text1"
-       transform="matrix(0.26458333,0,0,0.26458333,0.1400432,0.37783746)"
-       aria-label="EBNF" />
+       d="m 4.197997,3.1043273 c -0.4528476,0 -0.8202522,0.3674045 -0.8202522,0.8202522 v 2.7341741 c 0,0.4528477 0.3674046,0.8202521 0.8202522,0.8202521 h 2.460757 0.2734171 c 0.1512341,0 0.2734171,-0.1221832 0.2734171,-0.2734171 0,-0.1512342 -0.122183,-0.2734173 -0.2734171,-0.2734173 V 6.3853364 c 0.1512341,0 0.2734171,-0.1221832 0.2734171,-0.2734176 v -2.734174 c 0,-0.1512343 -0.122183,-0.2734176 -0.2734171,-0.2734176 H 6.658754 Z m 0,3.2810092 H 6.3853368 V 6.9321712 H 4.197997 c -0.1512342,0 -0.2734172,-0.1221833 -0.2734172,-0.2734176 0,-0.1512339 0.122183,-0.2734172 0.2734172,-0.2734171 z M 4.471415,4.3347054 c 0,-0.07519 0.06152,-0.1367083 0.1367081,-0.1367083 h 1.6405047 c 0.075191,0 0.136709,0.061519 0.136709,0.1367083 0,0.075191 -0.06152,0.1367089 -0.136709,0.1367089 H 4.6081231 c -0.075191,0 -0.1367081,-0.061519 -0.1367081,-0.1367089 z m 0.1367081,0.4101265 h 1.6405047 c 0.075191,0 0.136709,0.061519 0.136709,0.1367087 0,0.07519 -0.06152,0.1367089 -0.136709,0.1367089 H 4.6081231 c -0.075191,0 -0.1367081,-0.061519 -0.1367081,-0.1367089 0,-0.07519 0.06152,-0.1367087 0.1367081,-0.1367087 z"
+       id="path1"
+       style="fill:#00b8f8;fill-opacity:1;stroke-width:0.00854431" />
   </g>
 </svg>
