@@ -1,0 +1,62 @@
+(* Extended Yucatec Maya Grammar with historical and glyphic context *)
+
+grammar              = header, { sentence } ;
+
+header               = "(*",
+                       "Yucatec Maya EBNF Grammar — includes modern Latin orthography and legacy glyphic origins.",
+                       "Classic Maya glyphs were syllabic, deciphered by Yuri Knorozov (1952).",
+                       "This grammar represents modern spoken and written Yucatec, derived from the ancient glyphic system.",
+                       "*)";
+
+sentence             = info_sentence | question | declarative ;
+
+info_sentence        = "(" Info ")" ;
+
+declarative          = clause_sequence ;
+clause_sequence      = clause, { clause } ;
+
+clause               = verb_phrase, object_phrase?, indirect_phrase?, subject_phrase? ;
+
+question             = wh_question | yesno_question ;
+wh_question          = wh_word, clause_sequence ;
+yesno_question       = "báa’ax", clause_sequence ;
+
+(* Phrases *)
+subject_phrase       = noun_phrase | pronoun ;
+object_phrase        = noun_phrase | pronoun ;
+indirect_phrase      = "ti’", noun_phrase ;
+
+noun_phrase          = possessive_prefix?, article?, numeral_phrase?, noun, adjective*, positional_marker? ;
+
+verb_phrase          = aspect_prefix?, person_prefix?, verb_root, stem_variant?, subordinate_suffix?, tense_suffix?, positional_marker? ;
+
+numeral_phrase       = numeral, classifier ;
+
+(* Info string *)
+Info                 = "Deciphered syllabary (Knorozov), phonetic continuity with Classic glyphs." ;
+
+(* Lexicon *)
+
+noun                 = "máak" | "ba’al" | "na" | "k’iin" | "ch’íich’" ;
+verb_root            = "k’áat" | "ts’íib" | "bin" | "kan" | "ojel" | "k’ajóol" ;
+
+stem_variant         = "" | "-j" ;         (* j-prefixed stems for intransitives etc. *)
+
+subordinate_suffix   = "-ak" ;            (* subordination marker *)
+
+adjective            = "nojoch" | "k’áax" | "ts’íik" ;
+positional_marker    = "pʼéel" | "pʼis" ;
+
+pronoun              = "in" | "a" | "u" | "k" ;
+possessive_prefix    = pronoun ;
+person_prefix        = "in" | "a" | "u" ;
+
+article              = "le" ;
+aspect_prefix        = "ta" | "ka" | "k’" ;
+
+tense_suffix         = "ij" | "ech" | "o’ob" ;
+
+numeral              = "jun" | "ka’" | "óox" ;
+classifier           = "túul" | "p’éel" | "ts’íit" ;
+
+wh_word              = "ba’ax" | "máak" | "tu’ux" ;

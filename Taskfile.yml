@@ -1,0 +1,53 @@
+# EBNF Intellij plugin
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  PROJECT_NAME: "EBNF Intellij plugin"
+set:
+  - pipefail
+
+tasks:
+  default:
+    cmds:
+      - echo ""
+      - echo "{{.PROJECT_NAME}} Build System"
+      - echo ""
+      - echo "Available tasks:"
+      - echo "Task Name              Description"
+      - echo "---------------------- -------------------------------------------------"
+      - echo "build                  Build the project"
+      - echo "test                   Run all tests"
+      - echo "test:verbose           Run all tests with detailed output"
+    silent: true
+  build:
+    desc: Build the project
+    cmds:
+      - echo "Building {{.PROJECT_NAME}}..."
+      - cmd gradlew.bat clean build
+      - echo "{{.PROJECT_NAME}} build completed successfully."
+    silent: true
+  test:
+    desc: Run all tests
+    cmds:
+      - echo "Running tests for {{.PROJECT_NAME}}..."
+      - cmd gradlew.bat test
+      - echo "Test execution completed."
+    silent: true
+  test:verbose:
+    desc: Run all tests with detailed output
+    cmds:
+      - echo "Running tests with detailed output..."
+      - cmd gradlew.bat test --info
+      - echo "Test execution completed."
+    silent: true
+  test:single:
+    desc: Run a specific test class
+    vars:
+      TEST_CLASS: '{{.TEST_CLASS | default ""}}'
+    cmds:
+      - echo "Running test class {{.TEST_CLASS}}..."
+      - cmd gradlew.bat test --tests "{{.TEST_CLASS}}"
+      - echo "Test execution completed."
+    silent: true

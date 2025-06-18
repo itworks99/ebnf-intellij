@@ -87,13 +87,6 @@ letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
 2. Click on a rule name
 3. Open the "EbnfRailroadDiagrams" tool window to see a railroad diagram of the selected rule
 
-### Generating Test Data
-
-1. Open an EBNF file in the editor
-2. Open the "EbnfTestDataGenerator" tool window
-3. Select a rule from the dropdown
-4. Click "Generate" to create sample strings that match the selected rule
-
 ### Validating Your Grammar
 
 The plugin automatically validates your grammar as you type, highlighting:

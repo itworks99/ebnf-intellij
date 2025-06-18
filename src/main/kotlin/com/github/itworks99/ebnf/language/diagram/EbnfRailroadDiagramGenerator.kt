@@ -4,10 +4,12 @@ import com.github.itworks99.ebnf.language.EbnfElementTypes
 import com.github.itworks99.ebnf.language.psi.EbnfFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.ui.Gray
+import com.intellij.ui.JBColor
+import com.intellij.util.ui.UIUtil
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.RenderingHints
-import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.JComponent
@@ -18,6 +20,7 @@ import java.awt.BasicStroke
 import java.awt.Font
 import java.awt.FontMetrics
 import java.awt.geom.RoundRectangle2D
+import java.awt.image.BufferedImage
 
 /**
  * Generates railroad diagrams for EBNF grammar rules.
@@ -68,8 +71,8 @@ class EbnfRailroadDiagramGenerator {
         val width = diagram.preferredSize.width
         val height = diagram.preferredSize.height
         
-        // Create a buffered image
-        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        // Create a buffered image using UIUtil
+        val image = UIUtil.createImage(diagram, width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB)
         val g2d = image.createGraphics()
         
         // Set rendering hints for better quality
@@ -111,11 +114,11 @@ class EbnfRailroadDiagramGenerator {
         private val arrowSize = 5
         
         // Colors
-        private val backgroundColor = Color.WHITE
-        private val trackColor = Color(100, 100, 100)
-        private val nodeColor = Color(220, 220, 255)
-        private val textColor = Color.BLACK
-        private val ruleNameColor = Color(0, 0, 150)
+        private val backgroundColor = JBColor.WHITE
+        private val trackColor = Gray._100
+        private val nodeColor = JBColor(0xE0E0E0, 0xE0E0E0)
+        private val textColor = JBColor.BLACK
+        private val ruleNameColor = JBColor(0x3F51B5, 0x3F51B5)
         
         // Font
         private val font = Font("SansSerif", Font.PLAIN, 12)

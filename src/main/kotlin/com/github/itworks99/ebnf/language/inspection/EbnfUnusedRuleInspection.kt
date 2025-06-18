@@ -11,8 +11,6 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.PsiTreeUtil
 
-val EbnfElementTypes.ID = EbnfElementType("ID")
-
 /**
  * Inspection for unused rules in EBNF grammar.
  *
@@ -56,7 +54,7 @@ class EbnfUnusedRuleInspection : LocalInspectionTool() {
 
                     // Find all references in the file
                     val references = PsiTreeUtil.findChildrenOfType(file, PsiElement::class.java)
-                        .filter { it.node.elementType == EbnfElementTypes.ID }
+                        .filter { it.node.elementType == EbnfElementTypes.REFERENCE }
                         .map { it.text }
                         .toSet()
 

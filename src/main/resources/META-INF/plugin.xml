@@ -69,8 +69,6 @@
         </intentionAction>
         <toolWindow factoryClass="com.github.itworks99.ebnf.language.diagram.EbnfRailroadDiagramToolWindowFactory" id="EbnfRailroadDiagrams" anchor="right" icon="AllIcons.Nodes.DataSchema"/>
         <toolWindow factoryClass="com.github.itworks99.ebnf.language.tree.EbnfSyntaxTreeToolWindowFactory" id="EbnfSyntaxTree" anchor="right" icon="AllIcons.Nodes.Folder"/>
-        <toolWindow factoryClass="com.github.itworks99.ebnf.language.generator.EbnfTestDataGeneratorToolWindowFactory" id="EbnfTestDataGenerator" anchor="right" icon="AllIcons.Nodes.Test"/>
-        <toolWindow factoryClass="com.github.itworks99.ebnf.build.EbnfBuildToolWindowFactory" id="EbnfBuild" anchor="right" icon="AllIcons.Actions.Compile"/>
         <applicationConfigurable
             parentId="tools"
             instance="com.github.itworks99.ebnf.settings.EbnfSettingsConfigurable"

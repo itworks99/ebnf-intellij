@@ -13,6 +13,8 @@ import com.intellij.psi.tree.TokenSet
 object EbnfElementTypes {
     // Note: The file element type is defined in EbnfParserDefinition.FILE
 
+    val ID = EbnfElementType("ID")
+
     // Rule definition
     val RULE = EbnfElementType("RULE")
     val RULE_NAME = EbnfElementType("RULE_NAME")

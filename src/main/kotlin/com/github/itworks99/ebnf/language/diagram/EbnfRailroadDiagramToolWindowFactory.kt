@@ -7,18 +7,21 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.content.ContentFactory
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridLayout
-import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.*
@@ -50,7 +53,7 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
     ) : JPanel(BorderLayout()), Disposable {
         private val diagramGenerator = EbnfRailroadDiagramGenerator()
         private val diagramPanel = JPanel(GridLayout(0, 1, 10, 10))
-        private val ruleSelector = JComboBox<String>()
+        private val ruleSelector = ComboBox<String>()
         private val messageLabel = JLabel("No EBNF file open")
         private var currentFile: VirtualFile? = null
 
@@ -119,7 +122,9 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
 
                 // Update the rule selector
                 ruleSelector.removeAllItems()
-                ruleNames.forEach { ruleSelector.addItem(it) }
+                for (ruleName in ruleNames) {
+                    ruleSelector.addItem(ruleName)
+                }
 
                 // Update the message
                 messageLabel.text = "Railroad diagrams for ${file.name}"
@@ -193,8 +198,8 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
                 val diagram = diagramPanel.components.firstOrNull() ?: return
 
                 // Create a buffered image
-                val image = BufferedImage(
-                    diagram.width, diagram.height, BufferedImage.TYPE_INT_ARGB
+                val image = UIUtil.createImage(
+                    this, diagram.width, diagram.height, java.awt.image.BufferedImage.TYPE_INT_ARGB
                 )
 
                 // Paint the diagram to the image
@@ -216,36 +221,5 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
         override fun dispose() {
             // Clean up resources
         }
-    }
-}
-
-/**
- * Generator for railroad diagrams from EBNF grammar rules.
- */
-class EbnfRailroadDiagramGenerator {
-    /**
-     * Generates a diagram component for the rule.
-     */
-    fun generateDiagram(rule: Any): JComponent {
-        // This is a placeholder implementation - in a real system,
-        // you would use a proper railroad diagram library
-        val panel = JPanel(BorderLayout())
-        panel.preferredSize = Dimension(600, 200)
-        panel.background = Color.WHITE
-        panel.border = BorderFactory.createLineBorder(Color.BLACK)
-
-        val ruleName = (rule as? com.github.itworks99.ebnf.language.psi.impl.EbnfRuleImpl)?.name ?: "Unknown"
-
-        val label = JLabel("Railroad diagram for rule: $ruleName")
-        label.horizontalAlignment = JLabel.CENTER
-
-        panel.add(label, BorderLayout.NORTH)
-
-        // Add a note indicating this is a placeholder
-        val note = JLabel("This is a placeholder. Implement actual diagram rendering here.")
-        note.horizontalAlignment = JLabel.CENTER
-        panel.add(note, BorderLayout.CENTER)
-
-        return panel
     }
 }
