@@ -2,8 +2,8 @@
 
 A comprehensive IntelliJ IDEA plugin for working with [Extended Backus-Naur Form (EBNF)](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) grammars. This plugin provides rich language support for EBNF files, making it easier to create, edit, and analyze formal language specifications.
 
-[![Kotlin](https://img.shields.io/badge/kotlin-1.9.0-blue.svg)](https://kotlinlang.org)
-[![IntelliJ Platform](https://img.shields.io/badge/intellij%20platform-2023.2-blue.svg)](https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started.html)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.1.20-blue.svg)](https://kotlinlang.org)
+[![IntelliJ Platform](https://img.shields.io/badge/intellij%20platform-2024.2-blue.svg)](https://www.jetbrains.com/idea/download/)
 
 ![Build](https://github.com/itworks99/ebnf-intellij/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
@@ -14,8 +14,8 @@ A comprehensive IntelliJ IDEA plugin for working with [Extended Backus-Naur Form
 The EBNF IntelliJ Plugin provides a rich set of features for working with EBNF grammar files:
 
 ### Core Language Support
-- **Syntax Highlighting**: Colorful highlighting of EBNF syntax elements
-- **Error Detection**: Real-time validation of EBNF syntax
+- **Syntax Highlighting**: Colorful highlighting of EBNF syntax elements based on ISO EBNF standard
+- **Error Detection**: Real-time validation of EBNF syntax with quick fix suggestions
 - **Code Completion**: Smart completion for rule references and EBNF operators
 - **Code Folding**: Collapse rule definitions and comment blocks for better readability
 
@@ -33,11 +33,10 @@ The EBNF IntelliJ Plugin provides a rich set of features for working with EBNF g
 ### Visualization
 - **Railroad Diagrams**: Visualize grammar rules as railroad diagrams
 - **Syntax Tree Viewer**: Explore the parse tree of your grammar
-- **Test Data Generator**: Generate valid strings from your grammar for testing
 
-### Project Integration
-- **Build Integration**: Validate EBNF files during project build
-- **Settings**: Configure validation rules and visualization preferences
+### Standard Support
+- Supports various EBNF standard variations
+- Provides compatibility with ISO EBNF notation
 
 <!-- Plugin description -->
 The EBNF IntelliJ Plugin provides comprehensive support for Extended Backus-Naur Form (EBNF) grammar files in IntelliJ IDEA. EBNF is a notation technique for context-free grammars, commonly used to describe the syntax of languages, protocols, and file formats.
@@ -51,10 +50,8 @@ This plugin enhances your EBNF editing experience with:
 - Syntax and semantic validation
 - Railroad diagram visualization
 - Syntax tree viewer
-- Test data generation
-- Build integration and customizable settings
+- Support for various EBNF standard variations
 
-Whether you're designing a new programming language, documenting a file format, or teaching formal language theory, this plugin makes working with EBNF grammars more productive and enjoyable.
 <!-- Plugin description end -->
 
 ## Usage Examples
@@ -110,6 +107,11 @@ The plugin automatically validates your grammar as you type, highlighting:
 
   Download the [latest release](https://github.com/itworks99/ebnf-intellij/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+
+## Requirements
+
+- IntelliJ IDEA 2024.2 or newer (Community or Ultimate edition)
+- Java 17 or newer
 
 ## Contributing
 

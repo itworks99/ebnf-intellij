@@ -3,4 +3,5 @@
 .intellijPlatform
 .qodana
 build/
-!/src/main/kotlin/com/github/itworks99/ebnf/build/
+.kotlin
+.run
