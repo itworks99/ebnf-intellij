@@ -20,9 +20,6 @@ import com.github.itworks99.ebnf.language.psi.impl.EbnfPsiElementImpl
  * It defines how the source code is tokenized, parsed, and converted into a PSI tree.
  */
 class EbnfParserDefinition : ParserDefinition {
-    companion object {
-        val FILE = IFileElementType(EbnfLanguage)
-    }
 
     override fun createLexer(project: Project): Lexer = EbnfLexer()
 
@@ -40,3 +37,5 @@ class EbnfParserDefinition : ParserDefinition {
 
     override fun getWhitespaceTokens(): TokenSet = EbnfTokenTypes.WHITESPACES
 }
+
+val FILE = IFileElementType(EbnfLanguage)

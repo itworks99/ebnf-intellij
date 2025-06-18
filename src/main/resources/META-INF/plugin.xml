@@ -21,6 +21,54 @@
                 <lang.parserDefinition
                     language="EBNF"
                     implementationClass="com.github.itworks99.ebnf.language.EbnfParserDefinition"/>
+                <completion.contributor
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.completion.EbnfCompletionContributor"/>
+                <lang.foldingBuilder
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.folding.EbnfFoldingBuilder"/>
+                <lang.psiStructureViewFactory
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.structure.EbnfStructureViewFactory"/>
+                <psi.referenceContributor
+                    language="EBNF"
+                    implementation="com.github.itworks99.ebnf.language.reference.EbnfReferenceContributor"/>
+                <lang.documentationProvider
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.documentation.EbnfDocumentationProvider"/>
+                <annotator
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.annotator.EbnfAnnotator"/>
+                <localInspection
+                    language="EBNF"
+                    displayName="Redundant parentheses"
+                    groupName="EBNF"
+                    enabledByDefault="true"
+                    level="WARNING"
+                    implementationClass="com.github.itworks99.ebnf.language.inspection.EbnfRedundantParenthesesInspection"/>
+                <localInspection
+                    language="EBNF"
+                    displayName="Unused rule"
+                    groupName="EBNF"
+                    enabledByDefault="true"
+                    level="WARNING"
+                    implementationClass="com.github.itworks99.ebnf.language.inspection.EbnfUnusedRuleInspection"/>
+                <localInspection
+                    language="EBNF"
+                    displayName="Simplify repetition"
+                    groupName="EBNF"
+                    enabledByDefault="true"
+                    level="WARNING"
+                    implementationClass="com.github.itworks99.ebnf.language.inspection.EbnfSimplifyRepetitionInspection"/>
+                <intentionAction>
+                    <className>com.github.itworks99.ebnf.language.intention.EbnfExtractRuleIntention</className>
+                    <category>EBNF</category>
+                </intentionAction>
+                <intentionAction>
+                    <className>com.github.itworks99.ebnf.language.intention.EbnfSimplifyAlternationIntention</className>
+                    <category>EBNF</category>
+                </intentionAction>
+                <toolWindow factoryClass="com.github.itworks99.ebnf.language.diagram.EbnfRailroadDiagramToolWindowFactory" id="EbnfRailroadDiagrams" anchor="right" icon="AllIcons.Nodes.DataSchema"/>
                 <toolWindow factoryClass="com.github.itworks99.ebnf.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
                 <postStartupActivity implementation="com.github.itworks99.ebnf.startup.MyProjectActivity" />
             </extensions>
