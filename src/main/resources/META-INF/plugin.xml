@@ -58,10 +58,12 @@
             level="WARNING"
             implementationClass="com.github.itworks99.ebnf.language.inspection.EbnfSimplifyRepetitionInspection"/>
         <intentionAction>
+            <language/>
             <className>com.github.itworks99.ebnf.language.intention.EbnfExtractRuleIntention</className>
             <category>EBNF</category>
         </intentionAction>
         <intentionAction>
+            <language/>
             <className>com.github.itworks99.ebnf.language.intention.EbnfSimplifyAlternationIntention</className>
             <category>EBNF</category>
         </intentionAction>
@@ -73,7 +75,7 @@
             parentId="tools"
             instance="com.github.itworks99.ebnf.settings.EbnfSettingsConfigurable"
             id="com.github.itworks99.ebnf.settings.EbnfSettingsConfigurable"
-            displayName="EBNF Settings"/>
+            displayName="EBNF Plugin Settings"/>
         <applicationService
             serviceImplementation="com.github.itworks99.ebnf.settings.EbnfSettingsService"/>
     </extensions>

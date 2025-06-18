@@ -25,7 +25,7 @@ class EbnfStructureViewElement(private val element: PsiElement) :
         }
     }
 
-    override fun canNavigate(): Boolean = element is NavigatablePsiElement && (element as NavigatablePsiElement).canNavigate()
+    override fun canNavigate(): Boolean = element is NavigatablePsiElement && element.canNavigate()
 
     override fun canNavigateToSource(): Boolean = canNavigate()
 

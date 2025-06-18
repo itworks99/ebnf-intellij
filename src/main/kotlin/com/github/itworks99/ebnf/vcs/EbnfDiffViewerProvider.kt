@@ -124,7 +124,7 @@ class EbnfDiffViewerProvider : DiffToolPredictor {
          *
          * @return The project.
          */
-        private fun getProject(): Project? {
+        override fun getProject(): Project? {
             return myContext.project
         }
         
