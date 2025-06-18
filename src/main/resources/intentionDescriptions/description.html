@@ -1,0 +1,26 @@
+<html>
+<body>
+Provides intentions for working with Extended Backus-Naur Form (EBNF) grammar files.
+
+<p>
+    This plugin offers several intentions that help you refactor and improve EBNF grammar definitions.
+    These intentions include extracting expressions into separate rules and simplifying complex alternation patterns.
+    Using these intentions can make your grammar definitions more readable, maintainable, and efficient.
+</p>
+<p>
+    The intentions recognize standard EBNF notation and help with following best practices in grammar design.
+</p>
+<p>
+    Example of grammar transformation:
+</p>
+<pre><code>
+/* Before: Complex inline expression */
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+/* After: Using extract rule intention */
+digit = digitChar ;
+digitChar = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+</code></pre>
+<!-- tooltip end -->
+</body>
+</html>
