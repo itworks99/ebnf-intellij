@@ -18,7 +18,10 @@
                 <lang.syntaxHighlighterFactory
                     language="EBNF"
                     implementationClass="com.github.itworks99.ebnf.language.EbnfSyntaxHighlighterFactory"/>
-                <toolWindow factoryClass="com.github.itworks99.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-                <postStartupActivity implementation="com.github.itworks99.startup.MyProjectActivity" />
+                <lang.parserDefinition
+                    language="EBNF"
+                    implementationClass="com.github.itworks99.ebnf.language.EbnfParserDefinition"/>
+                <toolWindow factoryClass="com.github.itworks99.ebnf.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+                <postStartupActivity implementation="com.github.itworks99.ebnf.startup.MyProjectActivity" />
             </extensions>
         </idea-plugin>
