@@ -2,6 +2,7 @@ package com.github.itworks99.ebnf.language.diagram
 
 import com.github.itworks99.ebnf.language.EbnfFileType
 import com.github.itworks99.ebnf.language.psi.EbnfFile
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
@@ -9,18 +10,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.content.ContentFactory
+import com.intellij.psi.PsiManager
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.content.ContentFactory
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Dimension
 import java.awt.GridLayout
-import javax.swing.JButton
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
+import java.awt.image.BufferedImage
 import java.io.File
+import javax.imageio.ImageIO
+import javax.swing.*
 
 /**
  * Factory for creating the Railroad Diagram tool window.
@@ -32,7 +33,7 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val contentFactory = ContentFactory.getInstance()
         val content = contentFactory.createContent(
-            RailroadDiagramPanel(project, toolWindow),
+            RailroadDiagramPanel(project),
             "Railroad Diagrams",
             false
         )
@@ -45,49 +46,53 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
      * Panel that displays railroad diagrams for EBNF grammar rules.
      */
     private class RailroadDiagramPanel(
-        private val project: Project,
-        private val toolWindow: ToolWindow
-    ) : JPanel(BorderLayout()) {
+        private val project: Project
+    ) : JPanel(BorderLayout()), Disposable {
         private val diagramGenerator = EbnfRailroadDiagramGenerator()
-        private val diagramsPanel = JPanel(GridLayout(0, 1, 0, 10))
-        private val scrollPane = JBScrollPane(diagramsPanel)
-        private val toolbarPanel = JPanel(BorderLayout())
-        private val exportButton = JButton("Export Diagrams")
-        private val refreshButton = JButton("Refresh")
-        private val statusLabel = JLabel("No EBNF file open")
-        
+        private val diagramPanel = JPanel(GridLayout(0, 1, 10, 10))
+        private val ruleSelector = JComboBox<String>()
+        private val messageLabel = JLabel("No EBNF file open")
+        private var currentFile: VirtualFile? = null
+
         init {
-            // Set up the toolbar
-            toolbarPanel.add(exportButton, BorderLayout.WEST)
-            toolbarPanel.add(refreshButton, BorderLayout.EAST)
-            toolbarPanel.add(statusLabel, BorderLayout.CENTER)
-            toolbarPanel.border = JBUI.Borders.empty(5)
-            
-            // Set up the main panel
-            add(toolbarPanel, BorderLayout.NORTH)
+            // Set up the rule selector
+            ruleSelector.addActionListener {
+                updateDiagram()
+            }
+
+            // Set up the panel
+            val controlPanel = JPanel(BorderLayout())
+            controlPanel.add(JLabel("Select rule: "), BorderLayout.WEST)
+            controlPanel.add(ruleSelector, BorderLayout.CENTER)
+
+            val exportButton = JButton("Export diagram")
+            exportButton.addActionListener {
+                exportDiagram()
+            }
+            controlPanel.add(exportButton, BorderLayout.EAST)
+            controlPanel.border = JBUI.Borders.empty(5)
+
+            val scrollPane = JBScrollPane(diagramPanel)
+            scrollPane.border = JBUI.Borders.empty()
+
+            add(messageLabel, BorderLayout.NORTH)
+            add(controlPanel, BorderLayout.SOUTH)
             add(scrollPane, BorderLayout.CENTER)
             
-            // Set up the diagrams panel
-            diagramsPanel.border = JBUI.Borders.empty(10)
-            
-            // Add listeners
-            exportButton.addActionListener { exportDiagrams() }
-            refreshButton.addActionListener { updateDiagrams() }
-            
             // Listen for file editor changes
-            project.messageBus.connect().subscribe(
+            project.messageBus.connect(this).subscribe(
                 FileEditorManagerListener.FILE_EDITOR_MANAGER,
                 object : FileEditorManagerListener {
                     override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
                         if (file.fileType == EbnfFileType) {
-                            updateDiagrams()
+                            updateRules(file)
                         }
                     }
                     
                     override fun selectionChanged(event: FileEditorManagerEvent) {
                         val file = event.newFile
                         if (file?.fileType == EbnfFileType) {
-                            updateDiagrams()
+                            updateRules(file)
                         } else {
                             clearDiagrams()
                         }
@@ -96,112 +101,151 @@ class EbnfRailroadDiagramToolWindowFactory : ToolWindowFactory {
             )
             
             // Initial update
-            updateDiagrams()
-        }
-        
-        /**
-         * Updates the diagrams based on the currently open EBNF file.
-         */
-        private fun updateDiagrams() {
-            // Clear existing diagrams
-            diagramsPanel.removeAll()
-            
-            // Get the current file
             val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
-            
             if (currentFile?.fileType == EbnfFileType) {
-                // Get the PSI file
-                val psiFile = com.intellij.psi.PsiManager.getInstance(project).findFile(currentFile)
-                
-                if (psiFile is EbnfFile) {
-                    // Generate diagrams for all rules
-                    val diagrams = diagramGenerator.generateDiagrams(psiFile)
-                    
-                    if (diagrams.isNotEmpty()) {
-                        // Add each diagram to the panel
-                        for (diagram in diagrams) {
-                            diagramsPanel.add(diagram)
-                        }
-                        
-                        statusLabel.text = "${diagrams.size} rule(s) found in ${currentFile.name}"
-                        exportButton.isEnabled = true
-                    } else {
-                        diagramsPanel.add(JLabel("No rules found in the file"))
-                        statusLabel.text = "No rules found in ${currentFile.name}"
-                        exportButton.isEnabled = false
-                    }
+                updateRules(currentFile)
+            }
+        }
+
+        /**
+         * Updates the rule selector with rules from the file.
+         */
+        private fun updateRules(file: VirtualFile) {
+            val psiFile = PsiManager.getInstance(project).findFile(file) as? EbnfFile
+
+            if (psiFile != null) {
+                // Get rule names from the file
+                val ruleNames = psiFile.getRuleNames()
+
+                // Update the rule selector
+                ruleSelector.removeAllItems()
+                ruleNames.forEach { ruleSelector.addItem(it) }
+
+                // Update the message
+                messageLabel.text = "Railroad diagrams for ${file.name}"
+
+                // Save the current file
+                currentFile = file
+
+                // Update the diagram if there are rules
+                if (ruleNames.isNotEmpty()) {
+                    updateDiagram()
                 } else {
-                    diagramsPanel.add(JLabel("Not an EBNF file"))
-                    statusLabel.text = "Not an EBNF file"
-                    exportButton.isEnabled = false
+                    clearDiagrams()
+                    messageLabel.text = "No rules found in ${file.name}"
                 }
             } else {
-                diagramsPanel.add(JLabel("No EBNF file open"))
-                statusLabel.text = "No EBNF file open"
-                exportButton.isEnabled = false
+                clearDiagrams()
             }
-            
-            // Refresh the UI
-            diagramsPanel.revalidate()
-            diagramsPanel.repaint()
+        }
+
+        /**
+         * Updates the diagram based on the selected rule.
+         */
+        private fun updateDiagram() {
+            val selectedRule = ruleSelector.selectedItem as? String ?: return
+            val psiFile = currentFile?.let { PsiManager.getInstance(project).findFile(it) as? EbnfFile } ?: return
+
+            // Clear existing diagrams
+            diagramPanel.removeAll()
+
+            // Get the rule definition from the file
+            val rule = psiFile.findRuleByName(selectedRule)
+
+            if (rule != null) {
+                // Generate the diagram component
+                val diagram = diagramGenerator.generateDiagram(rule)
+
+                // Add the diagram to the panel
+                diagramPanel.add(diagram)
+
+                // Update the UI
+                diagramPanel.revalidate()
+                diagramPanel.repaint()
+            }
         }
         
         /**
-         * Clears all diagrams from the panel.
+         * Clears all diagrams.
          */
         private fun clearDiagrams() {
-            diagramsPanel.removeAll()
-            diagramsPanel.add(JLabel("No EBNF file open"))
-            statusLabel.text = "No EBNF file open"
-            exportButton.isEnabled = false
-            
-            // Refresh the UI
-            diagramsPanel.revalidate()
-            diagramsPanel.repaint()
+            diagramPanel.removeAll()
+            ruleSelector.removeAllItems()
+            messageLabel.text = "No EBNF file open"
+            diagramPanel.revalidate()
+            diagramPanel.repaint()
+            currentFile = null
         }
         
         /**
-         * Exports all diagrams as image files.
+         * Exports the current diagram to an image file.
          */
-        private fun exportDiagrams() {
-            // Get the current file
-            val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
-            
-            if (currentFile?.fileType == EbnfFileType) {
-                // Get the PSI file
-                val psiFile = com.intellij.psi.PsiManager.getInstance(project).findFile(currentFile)
-                
-                if (psiFile is EbnfFile) {
-                    // Generate diagrams for all rules
-                    val diagrams = diagramGenerator.generateDiagrams(psiFile)
-                    
-                    if (diagrams.isNotEmpty()) {
-                        // Show a file chooser dialog
-                        val fileChooser = JFileChooser()
-                        fileChooser.dialogTitle = "Select Directory to Save Diagrams"
-                        fileChooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                        
-                        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                            val directory = fileChooser.selectedFile
-                            
-                            // Get all rule names
-                            val ruleNames = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(psiFile, com.intellij.psi.PsiElement::class.java)
-                                .filter { it.node.elementType == com.github.itworks99.ebnf.language.EbnfElementTypes.RULE_NAME }
-                                .map { it.text }
-                                .toList()
-                            
-                            // Export each diagram
-                            for (i in diagrams.indices) {
-                                val ruleName = if (i < ruleNames.size) ruleNames[i] else "rule_$i"
-                                val filePath = File(directory, "${ruleName}.png").absolutePath
-                                diagramGenerator.exportDiagram(diagrams[i], filePath)
-                            }
-                            
-                            statusLabel.text = "Exported ${diagrams.size} diagram(s) to ${directory.absolutePath}"
-                        }
-                    }
-                }
+        private fun exportDiagram() {
+            val selectedRule = ruleSelector.selectedItem as? String ?: return
+
+            val fileChooser = JFileChooser()
+            fileChooser.dialogTitle = "Export Railroad Diagram"
+            fileChooser.selectedFile = File("${selectedRule}_diagram.png")
+            fileChooser.fileFilter = javax.swing.filechooser.FileNameExtensionFilter("PNG Images", "png")
+
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                val file = fileChooser.selectedFile
+                val diagram = diagramPanel.components.firstOrNull() ?: return
+
+                // Create a buffered image
+                val image = BufferedImage(
+                    diagram.width, diagram.height, BufferedImage.TYPE_INT_ARGB
+                )
+
+                // Paint the diagram to the image
+                diagram.paint(image.graphics)
+
+                // Save the image
+                ImageIO.write(image, "png", file)
+
+                // Show a confirmation message
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Diagram exported to ${file.absolutePath}",
+                    "Export Successful",
+                    JOptionPane.INFORMATION_MESSAGE
+                )
             }
         }
+
+        override fun dispose() {
+            // Clean up resources
+        }
+    }
+}
+
+/**
+ * Generator for railroad diagrams from EBNF grammar rules.
+ */
+class EbnfRailroadDiagramGenerator {
+    /**
+     * Generates a diagram component for the rule.
+     */
+    fun generateDiagram(rule: Any): JComponent {
+        // This is a placeholder implementation - in a real system,
+        // you would use a proper railroad diagram library
+        val panel = JPanel(BorderLayout())
+        panel.preferredSize = Dimension(600, 200)
+        panel.background = Color.WHITE
+        panel.border = BorderFactory.createLineBorder(Color.BLACK)
+
+        val ruleName = (rule as? com.github.itworks99.ebnf.language.psi.impl.EbnfRuleImpl)?.name ?: "Unknown"
+
+        val label = JLabel("Railroad diagram for rule: $ruleName")
+        label.horizontalAlignment = JLabel.CENTER
+
+        panel.add(label, BorderLayout.NORTH)
+
+        // Add a note indicating this is a placeholder
+        val note = JLabel("This is a placeholder. Implement actual diagram rendering here.")
+        note.horizontalAlignment = JLabel.CENTER
+        panel.add(note, BorderLayout.CENTER)
+
+        return panel
     }
 }

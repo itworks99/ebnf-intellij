@@ -99,28 +99,41 @@ class EbnfExtractRuleIntention : PsiElementBaseIntentionAction(), IntentionActio
         
         // Find the reference element in the dummy file
         val reference = PsiTreeUtil.findChildrenOfType(dummyFile, PsiElement::class.java)
-            .first { it.node.elementType == EbnfElementTypes.REFERENCE }
-        
-        // Replace the element with the reference
-        element.replace(reference)
+            .first { it.node.elementType == EbnfElementTypes.ID && it.text == ruleName }
+
+        // Replace the original element with the reference
+        val factory = PsiFileFactory.getInstance(project)
+        val newElement = factory.createElementFromText(ruleName, element.language,
+            EbnfElementTypes.ID, element.context)
+
+        element.replace(newElement ?: reference)
     }
     
     /**
      * Adds the new rule to the file.
      */
-    private fun addRuleToFile(element: PsiElement, newRule: PsiElement) {
-        // Find the containing rule
-        var current: PsiElement? = element
-        while (current != null && current.node.elementType != EbnfElementTypes.RULE) {
-            current = current.parent
+    private fun addRuleToFile(originalElement: PsiElement, newRule: PsiElement) {
+        val file = originalElement.containingFile
+
+        // Find the containing rule of the original element
+        val containingRule = PsiTreeUtil.getParentOfType(originalElement, PsiElement::class.java) {
+            it.node.elementType == EbnfElementTypes.RULE
         }
         
-        // Add the new rule after the containing rule
-        if (current != null) {
-            current.parent.addAfter(newRule, current)
+        if (containingRule != null) {
+            // Add the new rule after the containing rule
+            file.addAfter(newRule, containingRule)
+
+            // Add a newline for formatting
+            file.addAfter(
+                PsiFileFactory.getInstance(file.project)
+                    .createFileFromText("dummy.ebnf", EbnfFileType, "\n")
+                    .firstChild,
+                containingRule
+            )
         } else {
-            // If no containing rule found, add to the end of the file
-            element.containingFile.add(newRule)
+            // If we couldn't find the containing rule, add at the end of the file
+            file.add(newRule)
         }
     }
 }

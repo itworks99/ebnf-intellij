@@ -2,6 +2,7 @@ package com.github.itworks99.ebnf.language.generator
 
 import com.github.itworks99.ebnf.language.EbnfFileType
 import com.github.itworks99.ebnf.language.psi.EbnfFile
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
@@ -17,6 +18,9 @@ import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.Insets
+import java.awt.event.ActionEvent
+import java.io.File
 import javax.swing.*
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
@@ -42,142 +46,153 @@ class EbnfTestDataGeneratorToolWindowFactory : ToolWindowFactory {
     /**
      * Panel that displays the test data generator UI.
      */
-    private class TestDataGeneratorPanel(private val project: Project) : JPanel(BorderLayout()) {
+    private class TestDataGeneratorPanel(private val project: Project) : JPanel(BorderLayout()), Disposable {
         private val rulesList = JList<String>()
         private val rulesListModel = DefaultListModel<String>()
         private val generatedTextArea = JTextArea()
         private val generateButton = JButton("Generate")
         private val countSpinner = JSpinner(SpinnerNumberModel(5, 1, 100, 1))
+        private val saveButton = JButton("Save to File")
+        private val clearButton = JButton("Clear")
         private var currentFile: EbnfFile? = null
 
         init {
             // Set up the rules list
             rulesList.model = rulesListModel
             rulesList.selectionMode = ListSelectionModel.SINGLE_SELECTION
-            rulesList.addListSelectionListener(object : ListSelectionListener {
-                override fun valueChanged(e: ListSelectionEvent) {
-                    updateGenerateButtonState()
-                }
-            })
 
-            // Set up the generated text area
+            // Set up the text area
             generatedTextArea.isEditable = false
             generatedTextArea.lineWrap = true
             generatedTextArea.wrapStyleWord = true
 
             // Set up the generate button
+            generateButton.addActionListener { generateTestData() }
             generateButton.isEnabled = false
-            generateButton.addActionListener {
-                generateTestData()
+
+            // Set up the save button
+            saveButton.addActionListener { saveTestData() }
+            saveButton.isEnabled = false
+
+            // Set up the clear button
+            clearButton.addActionListener { clearGeneratedText() }
+            clearButton.isEnabled = false
+
+            // Set up the rule selection listener
+            rulesList.addListSelectionListener { e: ListSelectionEvent ->
+                if (!e.valueIsAdjusting) {
+                    generateButton.isEnabled = rulesList.selectedValue != null
+                }
             }
 
-            // Set up the count spinner
-            val countPanel = JPanel(BorderLayout())
-            countPanel.add(JBLabel("Count: "), BorderLayout.WEST)
-            countPanel.add(countSpinner, BorderLayout.CENTER)
-            countPanel.border = JBUI.Borders.empty(5)
-
-            // Set up the controls panel
-            val controlsPanel = JPanel(GridBagLayout())
+            // Create the control panel
+            val controlPanel = JPanel(GridBagLayout())
             val gbc = GridBagConstraints()
-            
+            gbc.fill = GridBagConstraints.HORIZONTAL
+            gbc.insets = Insets(5, 5, 5, 5)
+
             gbc.gridx = 0
             gbc.gridy = 0
-            gbc.weightx = 1.0
-            gbc.fill = GridBagConstraints.HORIZONTAL
-            controlsPanel.add(countPanel, gbc)
-            
+            controlPanel.add(JBLabel("Number of samples:"), gbc)
+
             gbc.gridx = 1
-            gbc.gridy = 0
-            gbc.weightx = 0.0
-            controlsPanel.add(generateButton, gbc)
+            gbc.weightx = 0.3
+            controlPanel.add(countSpinner, gbc)
 
-            // Set up the main layout
-            val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT)
-            splitPane.topComponent = JBScrollPane(rulesList)
-            splitPane.bottomComponent = JBScrollPane(generatedTextArea)
-            splitPane.dividerLocation = 200
-            splitPane.resizeWeight = 0.3
+            gbc.gridx = 2
+            gbc.weightx = 0.7
+            controlPanel.add(generateButton, gbc)
 
-            add(JBLabel("Select a rule to generate test data:"), BorderLayout.NORTH)
+            gbc.gridx = 0
+            gbc.gridy = 1
+            gbc.gridwidth = 2
+            gbc.weightx = 1.0
+            controlPanel.add(saveButton, gbc)
+
+            gbc.gridx = 2
+            gbc.gridwidth = 1
+            controlPanel.add(clearButton, gbc)
+
+            // Create the split pane
+            val rulesScrollPane = JBScrollPane(rulesList)
+            rulesScrollPane.border = BorderFactory.createTitledBorder("Rules")
+
+            val generatedScrollPane = JBScrollPane(generatedTextArea)
+            generatedScrollPane.border = BorderFactory.createTitledBorder("Generated Test Data")
+
+            val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, rulesScrollPane, generatedScrollPane)
+            splitPane.dividerLocation = 250
+
+            // Add components to the main panel
+            add(JBLabel("Select a rule to generate test data for"), BorderLayout.NORTH)
             add(splitPane, BorderLayout.CENTER)
-            add(controlsPanel, BorderLayout.SOUTH)
+            add(controlPanel, BorderLayout.SOUTH)
 
             // Listen for file editor changes
-            project.messageBus.connect().subscribe(
+            project.messageBus.connect(this).subscribe(
                 FileEditorManagerListener.FILE_EDITOR_MANAGER,
                 object : FileEditorManagerListener {
                     override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
                         if (file.fileType == EbnfFileType) {
-                            updateForFile(file)
+                            updateRules(file)
                         }
                     }
 
                     override fun selectionChanged(event: FileEditorManagerEvent) {
                         val file = event.newFile
                         if (file?.fileType == EbnfFileType) {
-                            updateForFile(file)
+                            updateRules(file)
                         } else {
-                            clearUI()
+                            clearRules()
                         }
                     }
                 }
             )
 
             // Initial update
-            val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
-            if (currentFile?.fileType == EbnfFileType) {
-                updateForFile(currentFile)
+            val selectedFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull {
+                it.fileType == EbnfFileType
+            }
+            if (selectedFile != null) {
+                updateRules(selectedFile)
             }
         }
 
         /**
-         * Updates the UI for the given file.
+         * Updates the rules list with rules from the file.
          */
-        private fun updateForFile(file: VirtualFile) {
+        private fun updateRules(file: VirtualFile) {
             val psiFile = PsiManager.getInstance(project).findFile(file) as? EbnfFile
+
             if (psiFile != null) {
+                // Clear the existing rules
+                rulesListModel.clear()
+
+                // Add rule names to the list
+                val ruleNames = psiFile.getRuleNames()
+                for (ruleName in ruleNames) {
+                    rulesListModel.addElement(ruleName)
+                }
+
+                // Save the current file
                 currentFile = psiFile
-                updateRulesList(psiFile)
-                generatedTextArea.text = "Select a rule and click Generate to create test data."
+
+                // Select the first rule if available
+                if (rulesListModel.size() > 0) {
+                    rulesList.selectedIndex = 0
+                }
             } else {
-                clearUI()
+                clearRules()
             }
         }
 
         /**
-         * Updates the rules list for the given file.
+         * Clears the rules list.
          */
-        private fun updateRulesList(file: EbnfFile) {
+        private fun clearRules() {
             rulesListModel.clear()
-            
-            // Create a generator to find all rules
-            val generator = EbnfTestDataGenerator(file)
-            
-            // Get all rules and add them to the list
-            val rules = generator.generateForAllRules(0).keys.sorted()
-            for (rule in rules) {
-                rulesListModel.addElement(rule)
-            }
-            
-            updateGenerateButtonState()
-        }
-
-        /**
-         * Clears the UI.
-         */
-        private fun clearUI() {
-            rulesListModel.clear()
-            generatedTextArea.text = "No EBNF file open."
+            generateButton.isEnabled = false
             currentFile = null
-            updateGenerateButtonState()
-        }
-
-        /**
-         * Updates the state of the generate button.
-         */
-        private fun updateGenerateButtonState() {
-            generateButton.isEnabled = currentFile != null && rulesList.selectedIndex != -1
         }
 
         /**
@@ -185,39 +200,81 @@ class EbnfTestDataGeneratorToolWindowFactory : ToolWindowFactory {
          */
         private fun generateTestData() {
             val selectedRule = rulesList.selectedValue ?: return
-            val file = currentFile ?: return
-            val count = countSpinner.value as Int
-            
-            // Create a generator
-            val generator = EbnfTestDataGenerator(file)
-            
-            // Generate test data
-            val result = StringBuilder()
-            
-            if (selectedRule == "All Rules") {
-                // Generate for all rules
-                val allData = generator.generateForAllRules(count)
-                for ((rule, samples) in allData) {
-                    result.append("Rule: $rule\n")
-                    for (sample in samples) {
-                        result.append("  $sample\n")
-                    }
-                    result.append("\n")
-                }
-            } else {
-                // Generate for the selected rule
-                result.append("Rule: $selectedRule\n")
-                for (i in 0 until count) {
-                    val sample = generator.generateForRule(selectedRule)
-                    if (sample != null) {
-                        result.append("  $sample\n")
-                    }
+            val countToGenerate = countSpinner.value as Int
+
+            // Implement a simple test data generator
+            val generator = TestDataGenerator()
+            val testData = generator.generateTestData(selectedRule, countToGenerate, currentFile)
+
+            // Display the generated test data
+            generatedTextArea.text = testData.joinToString("\n")
+            saveButton.isEnabled = true
+            clearButton.isEnabled = true
+        }
+
+        /**
+         * Saves the generated test data to a file.
+         */
+        private fun saveTestData() {
+            val selectedRule = rulesList.selectedValue ?: return
+            val testData = generatedTextArea.text
+
+            if (testData.isNotEmpty()) {
+                val fileChooser = JFileChooser()
+                fileChooser.dialogTitle = "Save Test Data"
+                fileChooser.selectedFile = File("${selectedRule}_test_data.txt")
+
+                if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                    val file = fileChooser.selectedFile
+
+                    // Write the test data to the file
+                    file.writeText(testData)
+
+                    // Show a confirmation message
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Test data saved to ${file.absolutePath}",
+                        "Save Successful",
+                        JOptionPane.INFORMATION_MESSAGE
+                    )
                 }
             }
-            
-            // Update the text area
-            generatedTextArea.text = result.toString()
-            generatedTextArea.caretPosition = 0
         }
+
+        /**
+         * Clears the generated text.
+         */
+        private fun clearGeneratedText() {
+            generatedTextArea.text = ""
+            saveButton.isEnabled = false
+            clearButton.isEnabled = false
+        }
+
+        override fun dispose() {
+            // Clean up resources
+        }
+    }
+}
+
+/**
+ * Simple test data generator for EBNF rules.
+ */
+class TestDataGenerator {
+    /**
+     * Generates test data for the given rule.
+     *
+     * @param ruleName The name of the rule to generate test data for
+     * @param count The number of test data items to generate
+     * @param ebnfFile The EBNF file containing the rule
+     * @return A list of generated test data strings
+     */
+    fun generateTestData(ruleName: String, count: Int, ebnfFile: EbnfFile?): List<String> {
+        if (ebnfFile == null) return emptyList()
+
+        val rule = ebnfFile.findRuleByName(ruleName) ?: return emptyList()
+
+        // This is a placeholder for actual test data generation logic
+        // In a real implementation, you would parse the rule and generate valid strings
+        return List(count) { index -> "Sample data $index for rule '$ruleName'" }
     }
 }

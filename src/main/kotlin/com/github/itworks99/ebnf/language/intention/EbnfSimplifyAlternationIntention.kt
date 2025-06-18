@@ -113,101 +113,113 @@ class EbnfSimplifyAlternationIntention : PsiElementBaseIntentionAction(), Intent
      * Simplifies an expression with a common prefix.
      */
     private fun simplifyWithCommonPrefix(project: Project, expression: PsiElement, terms: List<PsiElement>) {
-        // Get the first factor of each term
-        val firstFactors = terms.mapNotNull { term ->
-            PsiTreeUtil.findChildrenOfType(term, PsiElement::class.java)
-                .firstOrNull { it.node.elementType == EbnfElementTypes.FACTOR }
-        }
-        
-        val commonPrefix = firstFactors.first().text
-        
-        // Create the remaining parts of each term (without the common prefix)
-        val remainingParts = terms.mapIndexed { index, term ->
+        // Get the common prefix (first factor of each term)
+        val commonPrefix = PsiTreeUtil.findChildrenOfType(terms.first(), PsiElement::class.java)
+            .first { it.node.elementType == EbnfElementTypes.FACTOR }
+
+        // Create the parts without the prefix
+        val remainingParts = terms.map { term ->
             val factors = PsiTreeUtil.findChildrenOfType(term, PsiElement::class.java)
                 .filter { it.node.elementType == EbnfElementTypes.FACTOR }
                 .toList()
             
-            // Skip the first factor (common prefix)
-            if (factors.size <= 1) {
-                // If there's only one factor, use an empty string
+            // Skip the first factor (the common prefix)
+            val remainingFactors = factors.drop(1)
+
+            if (remainingFactors.isEmpty()) {
+                // If there are no remaining factors, use empty string
                 ""
             } else {
-                // Join the remaining factors with commas
-                factors.drop(1).joinToString(", ") { it.text }
+                // Otherwise, join them with commas
+                remainingFactors.joinToString(", ") { it.text }
             }
         }
-        
-        // Create the simplified expression: common_prefix, (remaining_part_1 | remaining_part_2 | ...)
-        val alternativeParts = remainingParts.filter { it.isNotEmpty() }
-        val alternativeExpression = if (alternativeParts.isEmpty()) {
-            // If all terms had only the common prefix, just use the prefix
-            commonPrefix
+
+        // Create the new expression text: "prefix, (part1 | part2 | ...)"
+        val nonEmptyParts = remainingParts.filter { it.isNotEmpty() }
+        val innerExpression = if (nonEmptyParts.isEmpty()) {
+            // If all parts are empty, don't add parentheses
+            ""
         } else {
-            // Create the alternation of remaining parts
-            "$commonPrefix, (${alternativeParts.joinToString(" | ")})"
+            // Otherwise, create an alternation of the remaining parts
+            "(${nonEmptyParts.joinToString(" | ")})"
+        }
+
+        // Create the simplified expression
+        val newExpressionText = if (innerExpression.isEmpty()) {
+            commonPrefix.text
+        } else {
+            "${commonPrefix.text}, $innerExpression"
         }
         
-        // Replace the expression with the simplified version
-        replaceExpression(project, expression, alternativeExpression)
+        // Replace the original expression with the simplified one
+        replaceExpression(project, expression, newExpressionText)
     }
     
     /**
      * Simplifies an expression with a common suffix.
      */
     private fun simplifyWithCommonSuffix(project: Project, expression: PsiElement, terms: List<PsiElement>) {
-        // Get the last factor of each term
-        val lastFactors = terms.mapNotNull { term ->
-            val factors = PsiTreeUtil.findChildrenOfType(term, PsiElement::class.java)
+        // Get the common suffix (last factor of each term)
+        val commonSuffix = run {
+            val factors = PsiTreeUtil.findChildrenOfType(terms.first(), PsiElement::class.java)
                 .filter { it.node.elementType == EbnfElementTypes.FACTOR }
                 .toList()
-            factors.lastOrNull()
+            factors.last()
         }
         
-        val commonSuffix = lastFactors.first().text
-        
-        // Create the remaining parts of each term (without the common suffix)
-        val remainingParts = terms.mapIndexed { index, term ->
+        // Create the parts without the suffix
+        val remainingParts = terms.map { term ->
             val factors = PsiTreeUtil.findChildrenOfType(term, PsiElement::class.java)
                 .filter { it.node.elementType == EbnfElementTypes.FACTOR }
                 .toList()
             
-            // Skip the last factor (common suffix)
-            if (factors.size <= 1) {
-                // If there's only one factor, use an empty string
+            // Skip the last factor (the common suffix)
+            val remainingFactors = factors.dropLast(1)
+
+            if (remainingFactors.isEmpty()) {
+                // If there are no remaining factors, use empty string
                 ""
             } else {
-                // Join the remaining factors with commas
-                factors.dropLast(1).joinToString(", ") { it.text }
+                // Otherwise, join them with commas
+                remainingFactors.joinToString(", ") { it.text }
             }
         }
         
-        // Create the simplified expression: (remaining_part_1 | remaining_part_2 | ...), common_suffix
-        val alternativeParts = remainingParts.filter { it.isNotEmpty() }
-        val alternativeExpression = if (alternativeParts.isEmpty()) {
-            // If all terms had only the common suffix, just use the suffix
-            commonSuffix
+        // Create the new expression text: "(part1 | part2 | ...), suffix"
+        val nonEmptyParts = remainingParts.filter { it.isNotEmpty() }
+        val innerExpression = if (nonEmptyParts.isEmpty()) {
+            // If all parts are empty, don't add parentheses
+            ""
         } else {
-            // Create the alternation of remaining parts
-            "(${alternativeParts.joinToString(" | ")}), $commonSuffix"
+            // Otherwise, create an alternation of the remaining parts
+            "(${nonEmptyParts.joinToString(" | ")})"
+        }
+
+        // Create the simplified expression
+        val newExpressionText = if (innerExpression.isEmpty()) {
+            commonSuffix.text
+        } else {
+            "$innerExpression, ${commonSuffix.text}"
         }
         
-        // Replace the expression with the simplified version
-        replaceExpression(project, expression, alternativeExpression)
+        // Replace the original expression with the simplified one
+        replaceExpression(project, expression, newExpressionText)
     }
     
     /**
-     * Replaces an expression with a new expression.
+     * Replaces the expression with a new one.
      */
-    private fun replaceExpression(project: Project, expression: PsiElement, newExpressionText: String) {
+    private fun replaceExpression(project: Project, expression: PsiElement, newText: String) {
         // Create a dummy file with the new expression
         val dummyFile = PsiFileFactory.getInstance(project)
-            .createFileFromText("dummy.ebnf", EbnfFileType, "dummy = $newExpressionText;") as EbnfFile
-        
+            .createFileFromText("dummy.ebnf", EbnfFileType, "dummy = $newText;") as EbnfFile
+
         // Find the expression element in the dummy file
         val newExpression = PsiTreeUtil.findChildrenOfType(dummyFile, PsiElement::class.java)
             .first { it.node.elementType == EbnfElementTypes.EXPRESSION }
         
-        // Replace the old expression with the new one
+        // Replace the original expression with the new one
         expression.replace(newExpression)
     }
 }
