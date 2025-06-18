@@ -51,24 +51,22 @@ class EbnfSimplifyRepetitionInspection : LocalInspectionTool() {
             .filter { it.node.elementType == EbnfElementTypes.FACTOR }
             .toList()
         
-        // If there are at least 2 factors, check for repetition
-        if (factors.size >= 2) {
-            // Group factors by their text representation
-            val factorGroups = factors.groupBy { it.text }
-            
-            // Find groups with multiple identical factors
-            val repetitiveGroups = factorGroups.filter { it.value.size >= 2 }
-            
-            if (repetitiveGroups.isNotEmpty()) {
-                // For simplicity, just handle the first repetitive group
-                val (factorText, repetitiveFactors) = repetitiveGroups.entries.first()
-                
-                // If there are at least 2 identical factors, suggest simplification
-                if (repetitiveFactors.size >= 2) {
+        // We need at least 2 factors to detect repetition
+        if (factors.size < 2) return
+
+        // Group factors by their text representation
+        val factorGroups = factors.groupBy { it.text }
+
+        // Look for repeated factors with at least 2 repetitions
+        factorGroups.forEach { (factorText, factorsOfSameType) ->
+            if (factorsOfSameType.size >= 2) {
+                // Check if they are consecutive
+                if (areConsecutive(factorsOfSameType, factors)) {
+                    // Register the problem
                     holder.registerProblem(
                         term,
-                        "Repetitive pattern can be simplified using repetition operator",
-                        SimplifyRepetitionFix(factorText, repetitiveFactors.size)
+                        "Repetitive pattern can be simplified using a repetition operator",
+                        SimplifyRepetitionFix(factorText, factorsOfSameType.size)
                     )
                 }
             }
@@ -76,36 +74,57 @@ class EbnfSimplifyRepetitionInspection : LocalInspectionTool() {
     }
     
     /**
-     * Quick fix to simplify repetitive patterns.
+     * Checks if a list of factors are consecutive in another list.
      */
-    private class SimplifyRepetitionFix(
+    private fun areConsecutive(subList: List<PsiElement>, fullList: List<PsiElement>): Boolean {
+        // If there's only one occurrence, it's not repetition
+        if (subList.size <= 1) return false
+
+        // Get the indices of the factors in the full list
+        val indices = subList.map { fullList.indexOf(it) }.sorted()
+
+        // Check if the indices form a continuous sequence
+        return indices.zipWithNext().all { (a, b) -> b - a == 1 }
+    }
+
+    /**
+     * Quick fix for simplifying repetitive patterns.
+     */
+    inner class SimplifyRepetitionFix(
         private val factorText: String,
         private val repetitionCount: Int
     ) : LocalQuickFix {
-        override fun getName(): String = "Simplify repetition using repetition operator"
-        
-        override fun getFamilyName(): String = name
-        
+        override fun getFamilyName(): String = "Simplify repetition"
+
+        override fun getName(): String = if (repetitionCount > 1) {
+            "Replace with '{$factorText}'"
+        } else {
+            "Replace with repetition"
+        }
+
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val term = descriptor.psiElement
             
-            // Create a simplified version of the term
-            val simplified = when (repetitionCount) {
-                2 -> "$factorText, $factorText" // Just two repetitions
-                else -> "{$factorText}, $factorText" // Three or more repetitions
-            }
-            
-            // Create a new term element
-            val dummyFile = PsiFileFactory.getInstance(project)
-                .createFileFromText("dummy.ebnf", EbnfFileType, "dummy = $simplified;") as EbnfFile
-            
-            // Find the term in the dummy file
-            val newTerm = PsiTreeUtil.findChildrenOfType(dummyFile, PsiElement::class.java)
-                .firstOrNull { it.node.elementType == EbnfElementTypes.TERM }
-            
-            // Replace the old term with the new one
-            if (newTerm != null) {
-                term.replace(newTerm)
+            // Create the simplified expression using repetition notation
+            val simplifiedText = "{$factorText}"
+
+            // Create a new element with the simplified expression
+            val psiFileFactory = PsiFileFactory.getInstance(project)
+
+            // Create a dummy file to parse the simplified expression
+            val dummyFile = psiFileFactory.createFileFromText(
+                "dummy.ebnf",
+                EbnfFileType,
+                "dummy = $simplifiedText;"
+            )
+
+            // Find the factor in the dummy file
+            val newFactor = PsiTreeUtil.findChildrenOfType(dummyFile, PsiElement::class.java)
+                .firstOrNull { it.node.elementType == EbnfElementTypes.FACTOR }
+
+            // Replace the original term with the new simplified factor
+            if (newFactor != null) {
+                term.replace(newFactor)
             }
         }
     }

@@ -34,36 +34,37 @@ class EbnfUnusedRuleInspection : LocalInspectionTool() {
                 if (element.node.elementType == EbnfElementTypes.RULE_NAME) {
                     val file = element.containingFile as? EbnfFile ?: return
                     
+                    // Make sure we're looking at a rule definition, not a reference
+                    val parent = element.parent
+                    if (parent == null || parent.node.elementType != EbnfElementTypes.RULE) {
+                        return
+                    }
+
                     // Get the rule name
                     val ruleName = element.text
                     
+                    // Skip the first rule (often the main/starting rule)
+                    val allRules = PsiTreeUtil.findChildrenOfType(file, PsiElement::class.java)
+                        .filter { it.node.elementType == EbnfElementTypes.RULE }
+                        .toList()
+
+                    if (allRules.isNotEmpty() && allRules.first() == parent) {
+                        return
+                    }
+
                     // Find all references in the file
                     val references = PsiTreeUtil.findChildrenOfType(file, PsiElement::class.java)
-                        .filter { it.node.elementType == EbnfElementTypes.REFERENCE }
+                        .filter { it.node.elementType == EbnfElementTypes.ID }
                         .map { it.text }
                         .toSet()
                     
-                    // Find all rule names in the file
-                    val ruleNames = PsiTreeUtil.findChildrenOfType(file, PsiElement::class.java)
-                        .filter { it.node.elementType == EbnfElementTypes.RULE_NAME }
-                        .map { it.text }
-                        .toList()
-                    
-                    // Assume the first rule is the starting rule
-                    val startingRule = ruleNames.firstOrNull()
-                    
-                    // If this rule is not the starting rule and not referenced, it's unused
-                    if (ruleName != startingRule && !references.contains(ruleName)) {
-                        // Find the containing rule element
-                        val rule = findContainingRule(element)
-                        
-                        if (rule != null) {
-                            holder.registerProblem(
-                                element,
-                                "Unused rule: $ruleName",
-                                RemoveUnusedRuleFix()
-                            )
-                        }
+                    // Check if the rule is unused
+                    if (ruleName !in references) {
+                        holder.registerProblem(
+                            element,
+                            "Unused rule: $ruleName",
+                            RemoveUnusedRuleFix()
+                        )
                     }
                 }
                 super.visitElement(element)
@@ -72,53 +73,20 @@ class EbnfUnusedRuleInspection : LocalInspectionTool() {
     }
     
     /**
-     * Finds the rule element containing the given element.
+     * Quick fix for removing unused rules.
      */
-    private fun findContainingRule(element: PsiElement): PsiElement? {
-        var current: PsiElement? = element
-        
-        while (current != null) {
-            if (current.node.elementType == EbnfElementTypes.RULE) {
-                return current
-            }
-            current = current.parent
-        }
-        
-        return null
-    }
-    
-    /**
-     * Quick fix to remove an unused rule.
-     */
-    private class RemoveUnusedRuleFix : LocalQuickFix {
-        override fun getName(): String = "Remove unused rule"
-        
-        override fun getFamilyName(): String = name
-        
+    inner class RemoveUnusedRuleFix : LocalQuickFix {
+        override fun getFamilyName(): String = "Remove unused rule"
+
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val element = descriptor.psiElement
             
-            // Find the containing rule
-            val rule = findContainingRule(element)
-            
-            // Remove the rule
-            rule?.delete()
-        }
-        
-        /**
-         * Finds the rule element containing the given element.
-         */
-        private fun findContainingRule(element: PsiElement): PsiElement? {
-            var current: PsiElement? = element
-            
-            while (current != null) {
-                if (current.node.elementType == EbnfElementTypes.RULE) {
-                    return current
-                }
-                current = current.parent
+            // Get the parent rule element
+            val rule = element.parent
+            if (rule != null && rule.node.elementType == EbnfElementTypes.RULE) {
+                // Remove the entire rule
+                rule.delete()
             }
-            
-            return null
         }
     }
 }
