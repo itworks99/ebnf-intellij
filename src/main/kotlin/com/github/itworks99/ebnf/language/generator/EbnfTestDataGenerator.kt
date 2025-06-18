@@ -4,6 +4,8 @@ import com.github.itworks99.ebnf.language.EbnfElementTypes
 import com.github.itworks99.ebnf.language.EbnfTokenTypes
 import com.github.itworks99.ebnf.language.psi.EbnfFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.*
 
@@ -14,7 +16,11 @@ import java.util.*
  * that conform to the grammar rules. It can be used for testing
  * parsers or other tools that process the language defined by the grammar.
  */
-class EbnfTestDataGenerator(private val file: EbnfFile) {
+class EbnfTestDataGenerator(file: EbnfFile) {
+
+    // Store a smart pointer to the file instead of a direct reference
+    private val filePointer: SmartPsiElementPointer<EbnfFile> =
+        SmartPointerManager.getInstance(file.project).createSmartPsiElementPointer(file)
 
     // Maximum recursion depth to prevent infinite recursion
     private val maxRecursionDepth = 5
@@ -70,8 +76,9 @@ class EbnfTestDataGenerator(private val file: EbnfFile) {
      * Finds all rules in the file.
      */
     private fun findAllRules(): List<PsiElement> {
+        val file = filePointer.element ?: return emptyList()
         return PsiTreeUtil.findChildrenOfType(file, PsiElement::class.java)
-            .filter { it.node.elementType == EbnfElementTypes.RULE }
+            .filter { it.node?.elementType == EbnfElementTypes.RULE }
             .toList()
     }
 
@@ -100,7 +107,7 @@ class EbnfTestDataGenerator(private val file: EbnfFile) {
 
     /**
      * Generates a placeholder string for a rule.
-     * 
+     *
      * This is a simplified implementation that doesn't actually parse the grammar.
      * A full implementation would recursively traverse the grammar and generate
      * strings based on the rule definitions.
