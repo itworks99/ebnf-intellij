@@ -3,5 +3,6 @@
 .intellijPlatform
 .qodana
 build/
-.kotlin
 .run
+.kotlin
+

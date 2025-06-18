@@ -20,6 +20,8 @@ tasks:
       - echo "build                  Build the project"
       - echo "test                   Run all tests"
       - echo "test:verbose           Run all tests with detailed output"
+      - echo "test:single            Run a specific test class"
+      - echo "check                  Check coverage and code quality"
     silent: true
   build:
     desc: Build the project
@@ -28,6 +30,12 @@ tasks:
       - cmd gradlew.bat clean build
       - echo "{{.PROJECT_NAME}} build completed successfully."
     silent: true
+  check:
+    desc: Check coverage and code quality
+    cmds:
+      - echo "Checking coverage for {{.PROJECT_NAME}}..."
+      - cmd ./gradlew koverVerify
+      - echo "Coverage checks completed."
   test:
     desc: Run all tests
     cmds:

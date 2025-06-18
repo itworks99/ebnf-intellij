@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.itworks99.ebnf</id>
     <name>EBNF Syntax Support</name>
-    <vendor>itworks99</vendor>
+    <vendor>K.Vanyushov</vendor>
 
     <depends>com.intellij.modules.platform</depends>
 

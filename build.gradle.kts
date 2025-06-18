@@ -1,3 +1,5 @@
+import com.intellij.rt.coverage.report.api.ReportApi.htmlReport
+import com.intellij.rt.coverage.report.api.ReportApi.xmlReport
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
@@ -97,7 +99,8 @@ intellijPlatform {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("pluginVersion")
+            .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {
@@ -113,12 +116,40 @@ changelog {
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
 }
 
-// Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
 kover {
-    reports {
-        total {
-            xml {
-                onCheck = true
+    // Enable XML and HTML reports
+    htmlReport {
+        htmlReportDir.set(layout.buildDirectory.dir("reports/kover/html"))
+        title.set("EBNF Plugin Test Coverage")
+        charset.set("UTF-8")
+        reports {
+            xml.set(false)
+            html.set(true)
+        }
+        outputRoots.setFrom(layout.buildDirectory.dir("classes/kotlin/main"))
+        sourceRoots.setFrom(layout.projectDirectory.dir("src/main/kotlin"))
+    }
+
+    xmlReport {
+        xmlReportFile.set(layout.buildDirectory.file("reports/kover/report.xml"))
+        title.set("EBNF Plugin XML Coverage Report")
+        reports {
+            xml.set(true)
+            html.set(false)
+        }
+        outputRoots.setFrom(layout.buildDirectory.dir("classes/kotlin/main"))
+        sourceRoots.setFrom(layout.projectDirectory.dir("src/main/kotlin"))
+    }
+    // Set the minimum coverage percentage for the project
+    verify {
+        rules {
+            rule {
+                bound {
+                    minValue = 70
+                }
+                filters {
+                    includes += listOf("com.github.itworks99.ebnf.language.*")
+                }
             }
         }
     }
@@ -154,7 +185,3 @@ intellijPlatformTesting {
         }
     }
 }
-
-
-
-
