@@ -32,15 +32,15 @@ class EbnfCompletionContributor : CompletionContributor() {
 
             if (file is EbnfFile) {
                 val ruleElements = PsiTreeUtil.findChildrenOfType(file, PsiElement::class.java)
-                    .filter { (it.node as? ASTNode)?.elementType == EbnfElementTypes.RULE_NAME }
+                    .filter { it.node?.elementType == EbnfElementTypes.RULE_NAME }
 
                 val containingRule = PsiTreeUtil.getParentOfType(position, PsiElement::class.java, true)
-                    ?.takeIf { (it.node as? ASTNode)?.elementType == EbnfElementTypes.RULE }
+                    ?.takeIf { it.node?.elementType == EbnfElementTypes.RULE }
 
                 val containingRuleName = containingRule?.let { rule ->
-                    PsiTreeUtil.findChildOfType(rule, PsiElement::class.java) { child: PsiElement ->
-                        (child.node as? ASTNode)?.elementType == EbnfElementTypes.RULE_NAME
-                    }?.text
+                    PsiTreeUtil.findChildrenOfType(rule, PsiElement::class.java)
+                        .firstOrNull { child -> child.node?.elementType == EbnfElementTypes.RULE_NAME }
+                        ?.text
                 }
 
                 val suggestedRules = ruleElements.mapNotNull { ruleElement ->
