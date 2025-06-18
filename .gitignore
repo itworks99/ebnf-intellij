@@ -2,4 +2,5 @@
 .idea
 .intellijPlatform
 .qodana
-build
+build/
+!/src/main/kotlin/com/github/itworks99/ebnf/build/
